@@ -147,7 +147,7 @@ def run_main(*argv, stdin=""):
     return code, out.getvalue(), err.getvalue()
 
 
-class CliTests(unittest.TestCase):
+class NewCliTests(unittest.TestCase):
     GOOD = make()
     WEAK = make(header={"alg": "none"}, payload={"sub": "x"})
 
