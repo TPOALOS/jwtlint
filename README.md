@@ -14,7 +14,14 @@ Works **offline** with one file and the standard library only.
 python3 jwtlint.py "$TOKEN"
 echo "$TOKEN" | python3 jwtlint.py -
 python3 jwtlint.py "$TOKEN" --show        # also print decoded header and payload
+python3 jwtlint.py "$TOKEN" --json        # machine-readable
+python3 jwtlint.py -f tokens.txt          # one token per line, # comments ok (stdin works too)
+python3 jwtlint.py "$TOKEN" --now 1700000000   # judge expiry as of another moment
+# or: pip install git+https://github.com/TPOALOS/jwtlint && jwtlint "$TOKEN"
 ```
+
+With several tokens the exit code is the worst result (`2` if any input is not a JWT, else `1` if any has findings).
+Tokens are never echoed back in the output.
 
 A leading `Bearer ` is accepted. Example output for a weak token:
 
@@ -36,6 +43,9 @@ LOW    no-aud           no aud claim
 | `sensitive-claim` | HIGH | claims like `password`, `secret`, `ssn`, `card` |
 | `key-in-header` | MEDIUM | `jku`, `jwk`, `x5u`, `x5c` headers (key-injection vector) |
 | `no-expiry`, `bad-exp`, `long-lived` | MEDIUM / LOW | missing, malformed, or very long lifetimes (over 30 days MEDIUM, over 1 day LOW) |
+| `timestamp-in-milliseconds`, `exp-before-iat`, `nbf-after-exp` | MEDIUM | broken time claims (a millisecond `exp` makes a token valid for millennia) |
+| `wildcard-aud` | MEDIUM | `aud` is `*` |
+| `iat-in-future`, `alg-case`, `insecure-iss` | LOW | clock skew or forgery, non-canonical `alg` spelling, `http://` issuer |
 | `no-iss`, `no-aud`, `pii-claim` | LOW | missing issuer/audience, personal data in the payload |
 | `symmetric-alg`, `expired`, `not-yet-valid`, `encrypted` | INFO | context only, does not affect the exit code |
 
